@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="23727" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="Nav-Hi-001">
+    <device id="retina6_12" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23721"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Navigation Controller-->
+        <scene sceneID="Scn-Na-001">
+            <objects>
+                <navigationController id="Nav-Hi-001" sceneMemberID="viewController">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="NBr-Hi-001">
+                        <rect key="frame" x="0.0" y="59" width="393" height="44"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <connections>
+                        <segue destination="Hvc-Hi-001" kind="relationship" relationship="rootViewController" id="Rel-Hi-001"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="FRs-Na-001" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+        </scene>
+        <!--Historial-->
+        <scene sceneID="Scn-Hi-002">
+            <objects>
+                <viewController storyboardIdentifier="HistorialViewController" id="Hvc-Hi-001" customClass="HistorialViewController" customModule="AdbanaAR" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="Vw0-Hi-001">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="Seg-Hi-001">
+                                <rect key="frame" x="16" y="111" width="361" height="32"/>
+                                <segments>
+                                    <segment title="Todos"/>
+                                    <segment title="Activos"/>
+                                    <segment title="Finalizados"/>
+                                </segments>
+                                <connections>
+                                    <action selector="filtroCambiado:" destination="Hvc-Hi-001" eventType="valueChanged" id="Act-Hi-001"/>
+                                </connections>
+                            </segmentedControl>
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="64" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="Tbl-Hi-001">
+                                <rect key="frame" x="0.0" y="150" width="393" height="668"/>
+                                <color key="backgroundColor" systemColor="systemGroupedBackgroundColor"/>
+                                <prototypes>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" reuseIdentifier="HistorialCell" id="Cel-Hi-001">
+                                        <rect key="frame" x="20" y="55.333332061767578" width="353" height="64"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="Cel-Hi-001" id="Ccv-Hi-001">
+                                            <rect key="frame" x="0.0" y="0.0" width="326" height="64"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                        </tableViewCellContentView>
+                                        <connections>
+                                            <segue destination="Dvc-Hi-001" kind="show" identifier="mostrarDetalle" id="Sgu-Hi-001"/>
+                                        </connections>
+                                    </tableViewCell>
+                                </prototypes>
+                                <connections>
+                                    <outlet property="dataSource" destination="Hvc-Hi-001" id="Ods-Hi-001"/>
+                                    <outlet property="delegate" destination="Hvc-Hi-001" id="Odl-Hi-001"/>
+                                </connections>
+                            </tableView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Aún no hay pedidos en este dispositivo." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Lbl-Hi-001">
+                                <rect key="frame" x="32" y="400" width="329" height="20.333333333333314"/>
+                                <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
+                                <color key="textColor" systemColor="secondaryLabelColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="Saf-Hi-001"/>
+                        <color key="backgroundColor" systemColor="systemGroupedBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="Seg-Hi-001" firstAttribute="top" secondItem="Saf-Hi-001" secondAttribute="top" constant="8" id="C01-Hi-001"/>
+                            <constraint firstItem="Seg-Hi-001" firstAttribute="leading" secondItem="Saf-Hi-001" secondAttribute="leading" constant="16" id="C02-Hi-001"/>
+                            <constraint firstItem="Saf-Hi-001" firstAttribute="trailing" secondItem="Seg-Hi-001" secondAttribute="trailing" constant="16" id="C03-Hi-001"/>
+                            <constraint firstItem="Tbl-Hi-001" firstAttribute="top" secondItem="Seg-Hi-001" secondAttribute="bottom" constant="8" id="C04-Hi-001"/>
+                            <constraint firstItem="Tbl-Hi-001" firstAttribute="leading" secondItem="Saf-Hi-001" secondAttribute="leading" id="C05-Hi-001"/>
+                            <constraint firstItem="Saf-Hi-001" firstAttribute="trailing" secondItem="Tbl-Hi-001" secondAttribute="trailing" id="C06-Hi-001"/>
+                            <constraint firstItem="Saf-Hi-001" firstAttribute="bottom" secondItem="Tbl-Hi-001" secondAttribute="bottom" id="C07-Hi-001"/>
+                            <constraint firstItem="Lbl-Hi-001" firstAttribute="centerY" secondItem="Tbl-Hi-001" secondAttribute="centerY" id="C08-Hi-001"/>
+                            <constraint firstItem="Lbl-Hi-001" firstAttribute="leading" secondItem="Saf-Hi-001" secondAttribute="leading" constant="32" id="C09-Hi-001"/>
+                            <constraint firstItem="Saf-Hi-001" firstAttribute="trailing" secondItem="Lbl-Hi-001" secondAttribute="trailing" constant="32" id="C10-Hi-001"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" title="Mis pedidos" largeTitleDisplayMode="always" id="NIt-Hi-001">
+                        <barButtonItem key="rightBarButtonItem" systemItem="refresh" id="Bbi-Hi-001">
+                            <connections>
+                                <action selector="refrescar:" destination="Hvc-Hi-001" id="Act-Hi-002"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
+                    <connections>
+                        <outlet property="emptyLabel" destination="Lbl-Hi-001" id="Out-Hi-001"/>
+                        <outlet property="filtroControl" destination="Seg-Hi-001" id="Out-Hi-002"/>
+                        <outlet property="refreshButton" destination="Bbi-Hi-001" id="Out-Hi-003"/>
+                        <outlet property="tableView" destination="Tbl-Hi-001" id="Out-Hi-004"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="FRs-Hi-002" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+        </scene>
+        <!--Detalle del pedido-->
+        <scene sceneID="Scn-Dt-003">
+            <objects>
+                <viewController storyboardIdentifier="DetalleHistorialViewController" id="Dvc-Hi-001" customClass="DetalleHistorialViewController" customModule="AdbanaAR" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="Vw0-Dt-001">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="12" translatesAutoresizingMaskIntoConstraints="NO" id="Stk-Dt-001">
+                                <rect key="frame" x="20" y="123" width="353" height="400"/>
+                                <subviews>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Restaurante" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Lbl-Dt-001">
+                                        <rect key="frame" x="0.0" y="0.0" width="353" height="26"/>
+                                        <fontDescription key="fontDescription" style="UICTFontTextStyleTitle2"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Pedido" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Lbl-Dt-002">
+                                        <rect key="frame" x="0.0" y="38" width="353" height="20"/>
+                                        <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Estado" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Lbl-Dt-003">
+                                        <rect key="frame" x="0.0" y="70" width="353" height="20"/>
+                                        <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
+                                        <color key="textColor" systemColor="tintColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Total" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Lbl-Dt-004">
+                                        <rect key="frame" x="0.0" y="102" width="353" height="20"/>
+                                        <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Fecha" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Lbl-Dt-005">
+                                        <rect key="frame" x="0.0" y="134" width="353" height="18"/>
+                                        <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
+                                        <color key="textColor" systemColor="secondaryLabelColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Btn-Dt-001">
+                                        <rect key="frame" x="0.0" y="164" width="353" height="44"/>
+                                        <state key="normal" title="Actualizar estado"/>
+                                        <connections>
+                                            <action selector="actualizarEstado:" destination="Dvc-Hi-001" eventType="touchUpInside" id="Act-Dt-001"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Btn-Dt-002">
+                                        <rect key="frame" x="0.0" y="220" width="353" height="44"/>
+                                        <state key="normal" title="Escuchar nota de voz"/>
+                                        <connections>
+                                            <action selector="reproducirNota:" destination="Dvc-Hi-001" eventType="touchUpInside" id="Act-Dt-002"/>
+                                        </connections>
+                                    </button>
+                                    <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="medium" translatesAutoresizingMaskIntoConstraints="NO" id="Spn-Dt-001">
+                                        <rect key="frame" x="0.0" y="276" width="353" height="20"/>
+                                    </activityIndicatorView>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Lbl-Dt-006">
+                                        <rect key="frame" x="0.0" y="308" width="353" height="0.0"/>
+                                        <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
+                                        <color key="textColor" systemColor="systemOrangeColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                </subviews>
+                            </stackView>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="Saf-Dt-001"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="Stk-Dt-001" firstAttribute="top" secondItem="Saf-Dt-001" secondAttribute="top" constant="20" id="C01-Dt-001"/>
+                            <constraint firstItem="Stk-Dt-001" firstAttribute="leading" secondItem="Saf-Dt-001" secondAttribute="leading" constant="20" id="C02-Dt-001"/>
+                            <constraint firstItem="Saf-Dt-001" firstAttribute="trailing" secondItem="Stk-Dt-001" secondAttribute="trailing" constant="20" id="C03-Dt-001"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" title="Detalle" id="NIt-Dt-001"/>
+                    <connections>
+                        <outlet property="activityIndicator" destination="Spn-Dt-001" id="Out-Dt-001"/>
+                        <outlet property="actualizarButton" destination="Btn-Dt-001" id="Out-Dt-002"/>
+                        <outlet property="estadoLabel" destination="Lbl-Dt-003" id="Out-Dt-003"/>
+                        <outlet property="fechaLabel" destination="Lbl-Dt-005" id="Out-Dt-004"/>
+                        <outlet property="mensajeLabel" destination="Lbl-Dt-006" id="Out-Dt-005"/>
+                        <outlet property="notaVozButton" destination="Btn-Dt-002" id="Out-Dt-006"/>
+                        <outlet property="pedidoLabel" destination="Lbl-Dt-002" id="Out-Dt-007"/>
+                        <outlet property="restauranteLabel" destination="Lbl-Dt-001" id="Out-Dt-008"/>
+                        <outlet property="totalLabel" destination="Lbl-Dt-004" id="Out-Dt-009"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="FRs-Dt-003" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+        </scene>
+    </scenes>
+    <resources>
+        <systemColor name="secondaryLabelColor">
+            <color red="0.23529411764705882" green="0.23529411764705882" blue="0.2627450980392157" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+        <systemColor name="systemGroupedBackgroundColor">
+            <color red="0.94901960784313721" green="0.94901960784313721" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="systemOrangeColor">
+            <color red="1" green="0.58431372549019611" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="tintColor">
+            <color red="0.0" green="0.47843137254901963" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+    </resources>
+</document>

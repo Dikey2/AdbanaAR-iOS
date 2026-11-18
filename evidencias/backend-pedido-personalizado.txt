@@ -1,0 +1,17 @@
+Evidencia: pedido de prueba con personalización (backend LOCAL Docker, no producción)
+Fecha: 2026-11-18 14:24 (hora local)
+Backend: Adbana_saas (Laravel + PostgreSQL 16 en Docker), http://localhost:8080, slug adbana-demo-ios
+
+POST /api/carta/adbana-demo-ios/pedidos
+  notas = "1× Hamburguesa clásica: sin tomate, sin cebolla", producto_id 2 (Brochetas Mixtas al Grill, 28.00)
+  Respuesta: pedido_id 5, estado pendiente, total 28.00 (precio calculado por el servidor)
+Reenvío con la misma clave_operacion: HTTP 201 (respuesta repetida), sin pedido duplicado.
+
+psql (contenedor db):
+  select id, estado, total, notas from pedidos where id=5;
+   5 | pendiente | 28.00 | 1× Hamburguesa clásica: sin tomate, sin cebolla
+  pedidos con esa nota: 1
+
+Tests de integración iOS (BackendIntegrationTests) contra este backend: 3/3 OK.
+Nota: el producto de la nota no coincide con producto_id 2 porque la carta local no contiene
+la hamburguesa de la demo; la prueba valida el transporte de la nota, no el catálogo.

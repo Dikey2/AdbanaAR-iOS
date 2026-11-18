@@ -1,0 +1,9 @@
+// Configuración Debug. No guardar secretos aquí.
+// URL base del backend Adbana (sin /api). "$()" evita que // se lea como comentario.
+// Simulador: localhost. iPhone físico: usar la IP LAN de la Mac (ver README) o HTTPS.
+ADBANA_API_BASE_URL = http:/$()/localhost:8080
+ADBANA_BUNDLE_ID = pe.edu.tecsup.adbana.ar
+ADBANA_ENVIRONMENT = desarrollo
+
+// Ajustes personales (DEVELOPMENT_TEAM, URL LAN). Archivo ignorado por Git.
+#include? "Local.xcconfig"

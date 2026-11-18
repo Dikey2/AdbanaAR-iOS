@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>AdbanaAPIBaseURL</key>
+	<string>$(ADBANA_API_BASE_URL)</string>
+	<key>AdbanaEnvironment</key>
+	<string>$(ADBANA_ENVIRONMENT)</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Adbana AR se conecta al servidor Adbana de tu red local durante las pruebas de desarrollo.</string>
+</dict>
+</plist>

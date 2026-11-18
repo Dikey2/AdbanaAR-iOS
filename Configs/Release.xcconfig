@@ -1,0 +1,7 @@
+// Configuración Release. Producción exige HTTPS (AppConfig rechaza http remoto).
+// Reemplazar por el dominio HTTPS real del despliegue AWS (no se versiona la IP).
+ADBANA_API_BASE_URL = https:/$()/restaurante.example.com
+ADBANA_BUNDLE_ID = pe.edu.tecsup.adbana.ar
+ADBANA_ENVIRONMENT = produccion
+
+#include? "Local.xcconfig"

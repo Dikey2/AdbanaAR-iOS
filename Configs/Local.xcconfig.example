@@ -1,0 +1,5 @@
+// Copiar como Configs/Local.xcconfig (ignorado por Git) y completar.
+// DEVELOPMENT_TEAM = TU_TEAM_ID
+// ADBANA_BUNDLE_ID = pe.edu.tecsup.adbana.ar.tunombre
+// Para iPhone físico contra Docker en la Mac (misma red Wi-Fi):
+// ADBANA_API_BASE_URL = http:/$()/192.168.1.50:8080

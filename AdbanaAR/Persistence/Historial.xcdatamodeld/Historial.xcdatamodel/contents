@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="23605" systemVersion="25G83" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="HistorialPedido" representedClassName="HistorialPedido" syncable="YES" codeGenerationType="class">
+        <attribute name="actualizadoEn" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="creadoEn" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="estado" attributeType="String" defaultValueString="pendiente"/>
+        <attribute name="notaVozArchivo" optional="YES" attributeType="String"/>
+        <attribute name="pagado" attributeType="String" defaultValueString="0.00"/>
+        <attribute name="pedidoId" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="restauranteNombre" attributeType="String" defaultValueString=""/>
+        <attribute name="slug" attributeType="String" defaultValueString=""/>
+        <attribute name="tipo" attributeType="String" defaultValueString="mesa"/>
+        <attribute name="total" attributeType="String" defaultValueString="0.00"/>
+        <uniquenessConstraints>
+            <uniquenessConstraint>
+                <constraint value="slug"/>
+                <constraint value="pedidoId"/>
+            </uniquenessConstraint>
+        </uniquenessConstraints>
+    </entity>
+</model>

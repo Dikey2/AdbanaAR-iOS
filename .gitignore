@@ -1,0 +1,16 @@
+# Xcode
+DerivedData/
+build/
+*.xcuserstate
+xcuserdata/
+*.xcscmblueprint
+.swiftpm/
+# Secretos y ajustes locales
+Configs/Local.xcconfig
+AdbanaAR/GoogleService-Info.plist
+**/GoogleService-Info.plist
+.env
+*.p12
+*.mobileprovision
+# Evidencias pesadas
+evidencias/*.mov

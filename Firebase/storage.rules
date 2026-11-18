@@ -1,0 +1,18 @@
+rules_version = '2';
+// Solo el dueño puede leer/escribir sus notas de voz. Nada más es accesible.
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /notas-voz/{uid}/{archivo} {
+      allow read, delete: if request.auth != null && request.auth.uid == uid;
+      allow create, update: if request.auth != null
+        && request.auth.uid == uid
+        && archivo.matches('^[0-9a-f-]{36}\\.m4a$')
+        && request.resource.size > 0
+        && request.resource.size <= 1024 * 1024
+        && request.resource.contentType == 'audio/mp4';
+    }
+    match /{otros=**} {
+      allow read, write: if false;
+    }
+  }
+}
