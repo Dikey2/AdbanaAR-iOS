@@ -14,7 +14,7 @@ Un estado CUMPLE exige código funcional **y** una prueba ejecutada. Que exista 
 | IBOutlet | UIKit, storyboard | Tabla, filtro, etiquetas y botones del detalle | `Historial.storyboard` y los controladores | Código | Mismo UI test | CUMPLE | — |
 | IBAction | UIKit | `filtroCambiado`, `refrescar`, `actualizarEstado`, `reproducirNota` | Controladores del historial | Código | UI test (filtro "Activos") | CUMPLE | Probar `reproducirNota` en el dispositivo |
 | TableView | UITableView | Historial con filtro por estado | `HistorialViewController.swift` | — | `historialTable` existe (OK) | CUMPLE | — |
-| Segue | Storyboard | `mostrarDetalle` con `prepare(for:)` | `HistorialViewController.swift:100` | — | Sin test de navegación al detalle | PARCIAL | Añadir un UI test que toque una fila con datos |
+| Segue | Storyboard | `mostrarDetalle` con `prepare(for:)` | `HistorialViewController.swift:100` | — | UI `testHistorialSegueAlDetalle` (OK) con un pedido sembrado en CoreData en memoria | CUMPLE | — |
 | CoreData | NSPersistentContainer | Historial local de pedidos | `Persistence/HistorialStore.swift`, `Historial.xcdatamodeld` | — | `PersistenceAndParsingTests` (OK) | CUMPLE | — |
 | Memoria local | FileManager y Keychain | Notas de voz en disco, caché USDZ (≤40 MB), Keychain | `VoiceNoteRecorder.swift`, `ModelRepository.swift`, `KeychainStore.swift` | — | Tests de persistencia (OK) | CUMPLE | — |
 | Micrófono | AVFoundation (AVAudioRecorder) | Nota de voz de 30 s como máximo, con permiso, reproducción y transcripción opcional | `Features/VoiceNotes/*` | — | Sin prueba automática (no hay micrófono en CI) | NO VERIFICADO | Grabar, reproducir y eliminar en un iPhone, con captura |
@@ -27,7 +27,7 @@ Un estado CUMPLE exige código funcional **y** una prueba ejecutada. Que exista 
 | Estados | @State, @Observable, @Bindable, @Environment | Carga, error y vacío en la carta y el modelo; fases del checkout | `CartaView`, `ProductoDetailView`, `CheckoutViewModel` | — | `OrderTests` (OK) | CUMPLE | — |
 | MVVM | ViewModels @Observable | `RestaurantPickerViewModel`, `CheckoutViewModel`, `ARPlacementController` | `Features/*` | — | Tests de pedidos (OK) | CUMPLE | — |
 | SwiftData | @Model | Preferencias, borrador idempotente del pedido, carrito guardado | `Persistence/SwiftDataModels.swift` | — | `SwiftDataTests` (OK) | CUMPLE | — |
-| REST | URLSession y async/await | Carta, pedido con `clave_operacion`, seguimiento | `Networking/APIClient.swift`, `DTOs.swift` | — | `APIClientTests` (OK). `BackendIntegrationTests` omitidos sin backend. | PARCIAL | Ejecutar la integración con Docker levantado |
+| REST | URLSession y async/await | Carta, pedido con `clave_operacion`, seguimiento | `Networking/APIClient.swift`, `DTOs.swift` | — | `APIClientTests` (OK) y `BackendIntegrationTests` 3/3 OK contra Docker local (2026-11-18) | CUMPLE | — |
 | Animaciones | withAnimation, symbolEffect | Botón "Agregado", chips, avisos AR | Vistas | Capturas | UI tests (OK) | CUMPLE | — |
 | Transiciones | `.transition`, `fullScreenCover`, `NavigationStack` | Carta → detalle → 3D → AR; checkout → seguimiento | Vistas | — | UI tests (OK) | CUMPLE | — |
 
@@ -48,7 +48,7 @@ Un estado CUMPLE exige código funcional **y** una prueba ejecutada. Que exista 
 | 3D | RealityKit | Visor con órbita y zoom; 3 platos propios y 1 USDZ CC0 | `ModelViewer3DView.swift`, `ProceduralDishBuilder.swift` | `evidencias/sim-visor-3d-*.png` | UI y unit tests (OK) | CUMPLE | Modelos más realistas (Blender o escaneo) |
 | AR | ARKit y RealityKit | Planos horizontales, retículo, "Colocar plato", ARAnchor, tracking e interrupción, foto | `Features/AR/ARPlacementView.swift` | Compila para el dispositivo | Sin prueba física | NO VERIFICADO | Protocolo físico (abajo) |
 | Ingredientes | Entidades separadas | Quitar o poner ingredientes, variante de guarnición, restaurar, reapilado | `DishRecipe.swift`, `ProceduralDishBuilder.swift` | Capturas | 10 unit y 2 UI tests (OK) | CUMPLE (3D) / NO VERIFICADO (en AR) | Probar en AR físico |
-| Pedido | REST de Adbana | Envío idempotente; la personalización va en `notas`; el precio lo fija el servidor | `CheckoutViewModel.swift`, `Cart.swift` | — | `OrderTests` con mock (OK) | PARCIAL | Pedido de prueba real con backend local y captura |
+| Pedido | REST de Adbana | Envío idempotente; la personalización va en `notas`; el precio lo fija el servidor | `CheckoutViewModel.swift`, `Cart.swift` | — | `OrderTests` (OK), integración 3/3 y pedido real n.º 5 con nota en PostgreSQL local (`evidencias/backend-pedido-personalizado.txt`) | CUMPLE (backend local) | Repetirlo desde la app en el iPhone |
 | Multiplataforma (investigación) | Flutter y model-viewer | Cliente Android existente | `Adbana_saas/flutter` | — | No compilado (falta JDK) | NO VERIFICADO | Instalar un JDK y ejecutar `flutter build apk` |
 | Unity con AR Foundation | Unity | — | — | — | — | BLOQUEADO | Unity no está instalado |
 
@@ -56,10 +56,10 @@ Un estado CUMPLE exige código funcional **y** una prueba ejecutada. Que exista 
 
 | Requisito | Estado | Pendiente |
 |---|---|---|
-| Informe (A4, interlineado 1.5, márgenes 3.5/2.5/3.0/2.5, Arial o Times 11/12/10) | NO CUMPLE | Redactar. Faltan integrantes y su participación reales. |
+| Informe (A4, interlineado 1.5, márgenes 3.5/2.5/3.0/2.5, Arial o Times 11/12/10) | PARCIAL | Borrador en `docs/informe/ADBANA_AR_Informe_borrador.docx`. Completar los campos `[COMPLETAR]` (integrantes, %, Gantt, evidencias físicas). |
 | Presentación (diapositivas) | NO CUMPLE | Resumen del informe |
 | Gantt por integrante | NO CUMPLE | Requiere datos reales del grupo (mínimo 6 integrantes) |
-| Evidencias | PARCIAL | Hay capturas de simulador. Faltan fotos y video de AR físico y de Firebase. |
+| Evidencias | PARCIAL | Hay capturas de simulador (3D, carrito, historial y Segue) y la evidencia del pedido en el backend. Faltan fotos y video de AR físico y de Firebase. |
 | Guion de 20 minutos como máximo | NO CUMPLE | Propuesta: 3 min de problema, 3 de arquitectura, 10 de demostración y 4 de conclusiones |
 | Carpeta en Drive (semana 16) | NO CUMPLE | Subir el código sin `build/`, `Local.xcconfig` ni `GoogleService-Info.plist` |
 

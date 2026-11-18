@@ -13,7 +13,7 @@
 | Elemento | Hallazgo |
 |---|---|
 | Proyecto iOS | `AdbanaAR-iOS/AdbanaAR.xcodeproj`. Swift 5 y SwiftUI con UIKit. Despliegue iOS 18.0. Usa carpetas sincronizadas de Xcode. |
-| Control de versiones iOS | **No es un repositorio Git**. No hay historial ni rama. Recomendación: `git init` antes de entregar, con el `.gitignore` existente. |
+| Control de versiones iOS | Al inicio no era un repositorio Git. Se inicializó el 2026-11-18 en la rama `main` (commit inicial sin secretos). |
 | Backend | `Adbana_saas`: Git en la rama `main`, sincronizado con `origin/main`. HEAD `cdc0c09`. Laravel en `src/` y PostgreSQL 16 en `docker-compose.yml`. |
 | Android | `Adbana_saas/flutter` (paquete `adbana_carta`): Flutter con `model_viewer_plus` y `http`. |
 | Unity | **No instalado**: no hay Unity Hub ni Editor en `/Applications`. |
@@ -141,6 +141,9 @@ No se ejecutaron migraciones.
 | Baseline de tests unitarios (antes de los cambios) | 34 tests: 31 OK, 3 omitidos (integración con un backend no levantado), 0 fallos |
 | Tests unitarios tras los cambios | 44 tests: 41 OK, 3 omitidos, 0 fallos. Un test nuevo detectó que el arroz atravesaba la mesa 1 cm; se corrigió. |
 | UI tests | 5/5 OK. Antes 4 fallaban por el botón tapado y el bug de navegación; ambos se corrigieron. |
+| UI test del Segue (`testHistorialSegueAlDetalle`) | OK. El total de UI tests pasa a 6. |
+| Integración con el backend local (Docker, `adbana-demo-ios`) | 3/3 OK |
+| Pedido real con nota de personalización y reenvío con la misma clave | Nota guardada en PostgreSQL y sin duplicado (`evidencias/backend-pedido-personalizado.txt`) |
 | Compilación para dispositivo (`generic/platform=iOS`, sin firma) | BUILD SUCCEEDED |
 | AR en dispositivo físico | **PENDIENTE DE VALIDACIÓN FÍSICA** |
 
