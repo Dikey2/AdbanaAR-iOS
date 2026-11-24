@@ -44,10 +44,6 @@ final class CheckoutViewModel {
     var isDemo: Bool { env.isDemo }
 
     func enviar() async {
-        guard !isDemo else {
-            fase = .rechazado("El modo demostración no envía pedidos. Abre un restaurante real.")
-            return
-        }
         guard let carta = env.carta, carta.restaurante.slug == env.cart.slug else {
             fase = .rechazado("Abre la carta del restaurante antes de enviar.")
             return
@@ -56,10 +52,14 @@ final class CheckoutViewModel {
         guard errores.isEmpty else { return }
 
         let p = env.preferences
+        defer { try? env.modelContainer.mainContext.save() }
         p.nombreCliente = form.clienteNombre
         p.telefono = form.telefono
         p.modalidadPreferida = form.tipo.rawValue
-        try? env.modelContainer.mainContext.save()
+        if isDemo {
+            simular(carta)
+            return
+        }
 
         do {
             // Nueva intención = nueva clave. Solo se crea una vez por intención de compra.
@@ -71,6 +71,18 @@ final class CheckoutViewModel {
         } catch {
             fase = .rechazado("No se pudo preparar el pedido.")
         }
+    }
+
+    /// Restaurante de demostración: el pedido no sale del dispositivo; se simula su avance.
+    private func simular(_ carta: CartaResponse) {
+        fase = .enviando
+        let r = env.simulador.crear(slug: carta.restaurante.slug, restaurante: carta.restaurante.nombre,
+                                    tipo: form.tipo, lineas: env.cart.lines)
+        env.historial.upsert(pedidoId: r.pedidoId, slug: carta.restaurante.slug, restauranteNombre: carta.restaurante.nombre,
+                             total: r.total.description, estado: r.estado, tipo: form.tipo.rawValue,
+                             notaVozArchivo: notaVozArchivo)
+        env.cart.clear()
+        fase = .creado(r)
     }
 
     /// Reintento: MISMA clave y MISMO cuerpo (no se regenera nada).

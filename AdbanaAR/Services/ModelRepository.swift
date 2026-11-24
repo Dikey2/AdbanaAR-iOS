@@ -8,23 +8,32 @@ enum ModelSource: Equatable {
     case glbOnly(URL)
     /// Modelo propio generado en la app con ingredientes separables (escala real).
     case receta(DishRecipe)
+    /// Escena fotorrealista incluida en la app, armada con modelos CC0 de Poly Haven a escala real.
+    case escaneo(URL, receta: DishRecipe?)
     /// El producto no tiene modelo 3D.
     case none
 
     var hasNativeModel: Bool {
         switch self {
-        case .usdz, .receta: return true
+        case .usdz, .receta, .escaneo: return true
         case .glbOnly, .none: return false
         }
     }
 
     /// Solo los modelos con componentes identificados admiten personalización visual.
-    var receta: DishRecipe? { if case .receta(let r) = self { return r } else { return nil } }
+    var receta: DishRecipe? {
+        switch self {
+        case .receta(let r): return r
+        case .escaneo(_, let r): return r
+        default: return nil
+        }
+    }
 
     var descripcion: String {
         switch self {
         case .usdz(_, let origen): return "Modelo USDZ (\(origen))"
-        case .receta: return "Modelo 3D propio a escala real con ingredientes independientes (geometría simplificada, no fotorrealista)."
+        case .receta: return "Modelo 3D propio a escala real con ingredientes independientes (generado por código, no escaneado)."
+        case .escaneo: return "Escaneo 3D de comida real, a escala real (Poly Haven CC0 y Sketchfab CC-BY; ver créditos)."
         case .glbOnly: return "El servidor ofrece este plato en GLB (formato web). Se muestra una representación genérica hasta publicar su versión USDZ."
         case .none: return "Este plato no tiene modelo 3D; se muestra una representación genérica."
         }
@@ -61,7 +70,12 @@ actor ModelRepository {
             if let receta = DishRecipe.from(referencia: raw) {
                 return .receta(receta)
             }
-            if raw.hasPrefix("bundle:") {
+            if raw.hasPrefix("escaneo:") {
+                let name = String(raw.dropFirst("escaneo:".count))
+                if let url = Bundle.main.url(forResource: name, withExtension: "usdz") {
+                    return .escaneo(url, receta: DishRecipe.paraEscaneo(name))
+                }
+            } else if raw.hasPrefix("bundle:") {
                 let name = String(raw.dropFirst("bundle:".count))
                 if let url = Bundle.main.url(forResource: (name as NSString).deletingPathExtension, withExtension: "usdz") {
                     return .usdz(url, origen: "incluido en la app, CC0")

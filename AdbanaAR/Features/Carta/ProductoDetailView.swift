@@ -18,12 +18,27 @@ struct ProductoDetailView: View {
     @State private var avisoAR: String?
     @State private var agregado = false
     @State private var mensaje: String?
+    @State private var verificandoUbicacion = false
+    @State private var zonaActiva: GeocercaAR?
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                ProductoThumb(url: env.api.absoluteURL(producto.imagen), size: 120)
+                FotoPlato(imagen: producto.imagen, api: env.api)
+                    .frame(height: 240)
                     .frame(maxWidth: .infinity)
+                    .clipShape(RoundedRectangle(cornerRadius: 24))
+                    .overlay(alignment: .bottomTrailing) {
+                        if fuente?.hasNativeModel == true {
+                            Button { mostrar3D = true } label: {
+                                Label("Girar en 3D", systemImage: "rotate.3d").font(.footnote.bold())
+                            }
+                            .buttonStyle(.borderedProminent)
+                            .clipShape(Capsule())
+                            .padding(10)
+                        }
+                    }
+                    .accessibilityHidden(true)
                 Text(producto.nombre).font(.title.bold())
                 if let d = producto.descripcion { Text(d).foregroundStyle(.secondary) }
                 HStack {
@@ -44,20 +59,6 @@ struct ProductoDetailView: View {
                     }
                 }
 
-                if producto.disponible {
-                    Stepper("Cantidad: \(cantidad)", value: $cantidad, in: 1...CartStore.maxUnitsPerProduct)
-                        .accessibilityIdentifier("cantidadStepper")
-                    Button(action: agregar) {
-                        Label(agregado ? "Agregado" : "Agregar al carrito",
-                              systemImage: agregado ? "checkmark" : "cart.badge.plus")
-                            .frame(maxWidth: .infinity)
-                            .contentTransition(.symbolEffect(.replace))
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.large)
-                    .disabled(env.isDemo && false)
-                    .accessibilityIdentifier("agregarCarrito")
-                }
                 if let mensaje {
                     Text(mensaje).font(.footnote).foregroundStyle(.orange)
                         .transition(.opacity)
@@ -67,17 +68,22 @@ struct ProductoDetailView: View {
             }
             .padding()
         }
+        .safeAreaInset(edge: .bottom) { barraAgregar }
         .navigationTitle(producto.nombre)
         .navigationBarTitleDisplayMode(.inline)
         .task { await cargarModelo() }
         .fullScreenCover(isPresented: $mostrar3D) {
-            ModelViewer3DView(titulo: producto.nombre, fuente: fuente ?? .none, personalizacion: personalizacion) {
-                mostrar3D = false
-                Task { try? await Task.sleep(for: .milliseconds(450)); await abrirAR() }
-            }
+            ModelViewer3DView(titulo: producto.nombre, fuente: fuente ?? .none, personalizacion: personalizacion,
+                              onAbrirAR: {
+                                  mostrar3D = false
+                                  Task { try? await Task.sleep(for: .milliseconds(450)); await abrirAR() }
+                              },
+                              onAgregar: producto.disponible ? { agregar() } : nil,
+                              precio: producto.precio.value)
         }
         .fullScreenCover(isPresented: $mostrarAR) {
-            ARPlacementView(titulo: producto.nombre, fuente: fuente ?? .none, personalizacion: personalizacion)
+            ARPlacementView(titulo: producto.nombre, fuente: fuente ?? .none, personalizacion: personalizacion, geocerca: zonaActiva,
+                            onAgregar: producto.disponible ? { agregar() } : nil)
         }
         .alert("Realidad aumentada", isPresented: Binding(get: { avisoAR != nil }, set: { if !$0 { avisoAR = nil } })) {
             Button("Ver en 3D") { mostrar3D = true }
@@ -106,15 +112,119 @@ struct ProductoDetailView: View {
                     Button { mostrar3D = true } label: { Label("Ver en 3D", systemImage: "cube") }
                         .buttonStyle(.bordered)
                         .accessibilityIdentifier("ver3D")
-                    Button { Task { await abrirAR() } } label: { Label("Ver en tu mesa", systemImage: "arkit") }
+                    Button { Task { await abrirAR() } } label: {
+                        if verificandoUbicacion {
+                            HStack { ProgressView(); Text("Ubicando…") }
+                        } else {
+                            Label("Ver en tu mesa", systemImage: "arkit")
+                        }
+                    }
                         .buttonStyle(.borderedProminent)
                         .accessibilityIdentifier("verAR")
                 }
-                .disabled(cargandoModelo)
+                .disabled(cargandoModelo || verificandoUbicacion)
+                zonaAviso
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         } label: {
             Label("Experiencia 3D / AR", systemImage: "cube.transparent")
+        }
+    }
+
+    /// Estado de la zona AR del restaurante, visible antes de intentar abrir la cámara.
+    @ViewBuilder
+    private var zonaAviso: some View {
+        let _ = env.versionGeocercas
+        switch env.estadoAR(slug: slug, configuracion: env.carta?.restaurante.configuracion) {
+        case .activa(let zona):
+            Label("AR disponible solo dentro del restaurante (radio de \(GeocercaAR.formatear(metros: zona.radioMetros))).",
+                  systemImage: "mappin.and.ellipse")
+                .font(.caption).foregroundStyle(.secondary)
+                .accessibilityIdentifier("zonaAR")
+        case .desactivada:
+            Label("El restaurante desactivó la realidad aumentada. Puedes verlo en 3D.", systemImage: "xmark.circle")
+                .font(.caption).foregroundStyle(.orange)
+                .accessibilityIdentifier("zonaARDesactivada")
+        case .sinConfigurar:
+            Label("Este restaurante aún no activó la AR en su local. Puedes verlo en 3D.", systemImage: "location.slash")
+                .font(.caption).foregroundStyle(.orange)
+                .accessibilityIdentifier("zonaARSinConfigurar")
+        }
+    }
+
+    /// La AR solo se habilita si el cliente está dentro de la zona configurada por el restaurante afiliado.
+    private func verificarUbicacion() async -> Bool {
+        let nombre = env.carta?.restaurante.nombre ?? "El restaurante"
+        let zona: GeocercaAR
+        switch env.estadoAR(slug: slug, configuracion: env.carta?.restaurante.configuracion) {
+        case .activa(let z): zona = z
+        case .desactivada:
+            avisoAR = "\(nombre) desactivó la realidad aumentada por el momento. Puedes ver el plato en 3D."
+            return false
+        case .sinConfigurar:
+            avisoAR = "La realidad aumentada solo funciona dentro del restaurante afiliado. \(nombre) aún no configuró la ubicación de su local. Puedes ver el plato en 3D."
+            return false
+        }
+        verificandoUbicacion = true
+        defer { verificandoUbicacion = false }
+        do {
+            let actual = try await env.ubicacion.ubicacionActual()
+            switch zona.evaluar(actual) {
+            case .dentro:
+                zonaActiva = zona
+                return true
+            case .fuera(let d):
+                avisoAR = "Estás a \(GeocercaAR.formatear(metros: d)) de \(nombre). La realidad aumentada solo funciona dentro del local (radio de \(GeocercaAR.formatear(metros: zona.radioMetros))). Mientras tanto puedes ver el plato en 3D."
+            case .precisionInsuficiente(let p):
+                avisoAR = "Tu ubicación no es lo bastante precisa (±\(GeocercaAR.formatear(metros: max(p, 0)))). Activa \"Ubicación exacta\" para Adbana AR en Ajustes e inténtalo de nuevo."
+            }
+        } catch {
+            avisoAR = error.localizedDescription
+        }
+        return false
+    }
+
+    /// Barra fija sobre la barra de pestañas: cantidad + agregar, siempre visible.
+    @ViewBuilder
+    private var barraAgregar: some View {
+        if producto.disponible {
+            HStack(spacing: 12) {
+                HStack(spacing: 0) {
+                    Button { cantidad = max(1, cantidad - 1) } label: { Image(systemName: "minus").frame(width: 40, height: 44) }
+                        .disabled(cantidad <= 1)
+                    Text("\(cantidad)").font(.headline.monospacedDigit()).frame(minWidth: 24)
+                        .contentTransition(.numericText())
+                    Button { cantidad = min(CartStore.maxUnitsPerProduct, cantidad + 1) } label: { Image(systemName: "plus").frame(width: 40, height: 44) }
+                }
+                .background(Color(.secondarySystemBackground), in: Capsule())
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("Cantidad")
+                .accessibilityValue("\(cantidad)")
+                .accessibilityAdjustableAction { d in
+                    if d == .increment { cantidad = min(CartStore.maxUnitsPerProduct, cantidad + 1) } else { cantidad = max(1, cantidad - 1) }
+                }
+                .accessibilityIdentifier("cantidadStepper")
+
+                Button(action: agregar) {
+                    HStack {
+                        Image(systemName: agregado ? "checkmark" : "cart.badge.plus")
+                            .contentTransition(.symbolEffect(.replace))
+                        Text(agregado ? "Agregado" : "Agregar")
+                        Spacer()
+                        Text(Money.format(producto.precio.value * Decimal(cantidad)))
+                            .contentTransition(.numericText())
+                    }
+                    .font(.headline)
+                    .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+                .accessibilityIdentifier("agregarCarrito")
+            }
+            .animation(.snappy, value: cantidad)
+            .padding(.horizontal)
+            .padding(.vertical, 10)
+            .background(.bar)
         }
     }
 
@@ -151,6 +261,7 @@ struct ProductoDetailView: View {
             avisoAR = "Este dispositivo no admite ARKit con seguimiento de superficies (por ejemplo, el simulador). Puedes ver el plato en el visor 3D."
             return
         }
+        guard await verificarUbicacion() else { return }
         switch AVCaptureDevice.authorizationStatus(for: .video) {
         case .authorized:
             mostrarAR = true

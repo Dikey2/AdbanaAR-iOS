@@ -2,6 +2,8 @@ import Foundation
 import Observation
 import SwiftData
 
+enum AppTab: Hashable { case inicio, carrito, historial, cuenta }
+
 /// Contenedor de dependencias compartido por SwiftUI y UIKit (Storyboard).
 @MainActor
 @Observable
@@ -15,6 +17,14 @@ final class AppEnvironment {
     let cart = CartStore()
     let firebase: FirebaseService
     let models = ModelRepository()
+    let ubicacion = UbicacionService()
+    let simulador: SimuladorPedidos
+    /// Pestaña visible: permite que la carta abra el carrito.
+    var tab: AppTab = .inicio
+    /// Sesión del modo administrador (se cierra al salir o al cerrar la app).
+    var adminActivo = false
+    /// Cambia con cada edición del administrador para refrescar las vistas.
+    var versionCatalogo = 0
     private(set) var api: APIClient
     private(set) var orders: OrderSubmissionService
     private(set) var configError: String?
@@ -22,13 +32,14 @@ final class AppEnvironment {
     /// Restaurante activo (carta descargada o demo local).
     var carta: CartaResponse?
     var mesaCodigo: String?
-    var isDemo: Bool { carta?.restaurante.slug == DemoCatalog.slug }
+    var isDemo: Bool { DemoCatalog.esDemo(carta?.restaurante.slug) }
 
     private init() {
         let args = ProcessInfo.processInfo.arguments
         isUITesting = args.contains("-ui-testing")
         modelContainer = LocalStore.makeContainer(inMemory: isUITesting)
         historial = HistorialStore(inMemory: isUITesting)
+        simulador = SimuladorPedidos(persistir: !isUITesting)
         if isUITesting && args.contains("-ui-testing-historial") {
             // Solo pruebas de UI: un pedido ficticio en el CoreData en memoria para ejercitar el Segue.
             _ = historial.upsert(pedidoId: 4242, slug: DemoCatalog.slug, restauranteNombre: "Restaurante de prueba UI",
@@ -47,6 +58,71 @@ final class AppEnvironment {
         restoreCart()
         cart.onChange = { [weak self] in self?.persistCart() }
     }
+
+    // MARK: Geocerca AR
+
+    /// Zona AR del restaurante: la publicada por el backend o, si no existe, la configurada al afiliarlo en este dispositivo.
+    func geocerca(slug: String, configuracion: ConfiguracionDTO? = nil) -> GeocercaAR? {
+        if let remota = configuracion?.ubicacionAR, remota.esValida { return remota }
+        return ubicacionLocal(slug: slug)?.geocerca
+    }
+
+    enum EstadoAR: Equatable {
+        case activa(GeocercaAR)
+        case desactivada
+        case sinConfigurar
+    }
+
+    /// Estado de la AR del restaurante: activa (con su zona), desactivada por el restaurante o sin ubicación.
+    func estadoAR(slug: String, configuracion: ConfiguracionDTO? = nil) -> EstadoAR {
+        guard let zona = geocerca(slug: slug, configuracion: configuracion) else { return .sinConfigurar }
+        return ubicacionLocal(slug: slug)?.arActiva == false ? .desactivada : .activa(zona)
+    }
+
+    /// Activa o desactiva la AR de un restaurante que ya tiene ubicación (propia o publicada por el servidor).
+    func cambiarAR(activa: Bool, slug: String, restauranteNombre: String, configuracion: ConfiguracionDTO? = nil) {
+        let ctx = modelContainer.mainContext
+        if let actual = ubicacionLocal(slug: slug) {
+            actual.arActiva = activa
+            actual.actualizadoEn = .now
+        } else if let remota = geocerca(slug: slug, configuracion: configuracion) {
+            let nueva = UbicacionRestaurante(slug: slug, restauranteNombre: restauranteNombre, geocerca: remota)
+            nueva.arActiva = activa
+            ctx.insert(nueva)
+        } else { return }
+        try? ctx.save()
+        versionGeocercas += 1
+    }
+
+    /// Indica si la zona proviene del servidor (no editable desde la app).
+    func geocercaEsRemota(_ configuracion: ConfiguracionDTO?) -> Bool { configuracion?.ubicacionAR?.esValida == true }
+
+    func ubicacionLocal(slug: String) -> UbicacionRestaurante? {
+        let d = FetchDescriptor<UbicacionRestaurante>(predicate: #Predicate { $0.slug == slug })
+        return try? modelContainer.mainContext.fetch(d).first
+    }
+
+    func guardarGeocerca(_ g: GeocercaAR, slug: String, restauranteNombre: String) {
+        let ctx = modelContainer.mainContext
+        if let actual = ubicacionLocal(slug: slug) {
+            actual.latitud = g.latitud; actual.longitud = g.longitud; actual.radioMetros = g.radioMetros
+            actual.restauranteNombre = restauranteNombre; actual.actualizadoEn = .now
+        } else {
+            ctx.insert(UbicacionRestaurante(slug: slug, restauranteNombre: restauranteNombre, geocerca: g))
+        }
+        try? ctx.save()
+        versionGeocercas += 1
+    }
+
+    func borrarGeocerca(slug: String) {
+        guard let actual = ubicacionLocal(slug: slug) else { return }
+        modelContainer.mainContext.delete(actual)
+        try? modelContainer.mainContext.save()
+        versionGeocercas += 1
+    }
+
+    /// Cambia al guardar o borrar una zona, para refrescar las vistas que la muestran.
+    private(set) var versionGeocercas = 0
 
     var preferences: PreferenciasUsuario { Self.loadPreferences(modelContainer.mainContext) }
 
@@ -96,7 +172,7 @@ final class AppEnvironment {
         self.carta = carta
         self.mesaCodigo = mesaCodigo
         cart.bind(slug: carta.restaurante.slug, restauranteNombre: carta.restaurante.nombre)
-        if carta.restaurante.slug != DemoCatalog.slug {
+        if !DemoCatalog.esDemo(carta.restaurante.slug) {
             preferences.ultimoSlug = carta.restaurante.slug
             try? modelContainer.mainContext.save()
         }
@@ -134,6 +210,13 @@ final class AppEnvironment {
 
     /// Consulta el estado con el token del propio pedido y actualiza CoreData + Firebase.
     func refreshStatus(slug: String, pedidoId: Int) async throws -> SeguimientoResponse {
+        if DemoCatalog.esDemo(slug) {
+            guard let s = simulador.seguimiento(pedidoId: pedidoId) else {
+                throw APIError.notFound("Este pedido ya no está disponible en el dispositivo.")
+            }
+            historial.updateEstado(slug: slug, pedidoId: pedidoId, estado: s.estado, pagado: s.pagado.description, total: s.total.description)
+            return s
+        }
         guard let token = trackingToken(slug: slug, pedidoId: pedidoId) else {
             throw APIError.notFound("No hay token de seguimiento para este pedido en este dispositivo.")
         }

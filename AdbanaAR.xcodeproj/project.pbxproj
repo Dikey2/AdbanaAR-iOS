@@ -380,8 +380,9 @@
 				INFOPLIST_FILE = AdbanaAR/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Adbana AR";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Adbana AR usa la cámara para colocar platos en 3D sobre tu mesa y para leer el código QR del restaurante.";
-				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Adbana AR guarda en tu galería las fotos del plato en realidad aumentada solo cuando pulsas el botón de cámara.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Adbana AR usa tu ubicación solo para comprobar que estás dentro del restaurante, porque la realidad aumentada funciona únicamente en el local afiliado. No se guarda ni se envía.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Adbana AR usa el micrófono solo cuando grabas una nota de voz para las indicaciones de tu pedido.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Adbana AR guarda en tu galería las fotos del plato en realidad aumentada solo cuando pulsas el botón de cámara.";
 				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Adbana AR transcribe tu nota de voz a texto para completar las notas del pedido. Siempre puedes revisar el texto antes de enviarlo.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -414,8 +415,9 @@
 				INFOPLIST_FILE = AdbanaAR/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Adbana AR";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Adbana AR usa la cámara para colocar platos en 3D sobre tu mesa y para leer el código QR del restaurante.";
-				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Adbana AR guarda en tu galería las fotos del plato en realidad aumentada solo cuando pulsas el botón de cámara.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Adbana AR usa tu ubicación solo para comprobar que estás dentro del restaurante, porque la realidad aumentada funciona únicamente en el local afiliado. No se guarda ni se envía.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Adbana AR usa el micrófono solo cuando grabas una nota de voz para las indicaciones de tu pedido.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Adbana AR guarda en tu galería las fotos del plato en realidad aumentada solo cuando pulsas el botón de cámara.";
 				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Adbana AR transcribe tu nota de voz a texto para completar las notas del pedido. Siempre puedes revisar el texto antes de enviarlo.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;

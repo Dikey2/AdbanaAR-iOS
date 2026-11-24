@@ -80,6 +80,28 @@ struct ConfiguracionDTO: Codable, Hashable, Sendable {
     let descripcion: String?
     let direccion: String?
     let horario: String?
+    /// Ampliación propuesta (docs/PROPUESTA_BACKEND_UBICACION_AR.md): zona donde se permite la AR.
+    let ubicacionAR: GeocercaAR?
+
+    private enum CodingKeys: String, CodingKey {
+        case modalidades, descripcion, direccion, horario
+        case ubicacionAR = "ubicacion_ar"
+    }
+
+    init(modalidades: [String]?, descripcion: String?, direccion: String?, horario: String?, ubicacionAR: GeocercaAR? = nil) {
+        self.modalidades = modalidades; self.descripcion = descripcion; self.direccion = direccion
+        self.horario = horario; self.ubicacionAR = ubicacionAR
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        modalidades = try c.decodeIfPresent([String].self, forKey: .modalidades)
+        descripcion = try c.decodeIfPresent(String.self, forKey: .descripcion)
+        direccion = try c.decodeIfPresent(String.self, forKey: .direccion)
+        horario = try c.decodeIfPresent(String.self, forKey: .horario)
+        // Un valor mal formado no debe impedir abrir la carta: se ignora.
+        ubicacionAR = (try? c.decodeIfPresent(GeocercaAR.self, forKey: .ubicacionAR)) ?? nil
+    }
 }
 
 struct CategoriaDTO: Codable, Hashable, Sendable {

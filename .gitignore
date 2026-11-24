@@ -14,3 +14,4 @@ AdbanaAR/GoogleService-Info.plist
 *.mobileprovision
 # Evidencias pesadas
 evidencias/*.mov
+Configs/*.bak*

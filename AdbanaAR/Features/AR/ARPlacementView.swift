@@ -281,9 +281,16 @@ struct ARPlacementView: View {
     let titulo: String
     let fuente: ModelSource
     var personalizacion: DishCustomization? = nil
+    /// Zona del restaurante: si el cliente sale de ella durante la sesión, la AR se detiene.
+    var geocerca: GeocercaAR? = nil
+    var onAgregar: (() -> Void)? = nil
+    @State private var agregado = false
     @Environment(\.dismiss) private var dismiss
+    @Environment(AppEnvironment.self) private var env
     @State private var controller = ARPlacementController()
     @State private var mostrarIngredientes = false
+    @State private var fueraDeZona: String?
+    @State private var lecturasFuera = 0
 
     var body: some View {
         ZStack {
@@ -356,6 +363,20 @@ struct ARPlacementView: View {
                         .buttonStyle(.bordered)
                         .labelStyle(.iconOnly)
                         .font(.title2)
+                        if let onAgregar {
+                            Button {
+                                onAgregar()
+                                withAnimation(.spring) { agregado = true }
+                                Task { try? await Task.sleep(for: .seconds(1.5)); withAnimation { agregado = false } }
+                            } label: {
+                                Label(agregado ? "Agregado al carrito" : "Agregar al carrito",
+                                      systemImage: agregado ? "checkmark" : "cart.badge.plus")
+                                    .frame(maxWidth: .infinity)
+                            }
+                            .buttonStyle(.borderedProminent)
+                            .controlSize(.large)
+                            .accessibilityIdentifier("agregarDesdeAR")
+                        }
                         Toggle("Permitir cambiar tamaño", isOn: $controller.escalaLibre)
                             .font(.footnote)
                     }
@@ -377,7 +398,43 @@ struct ARPlacementView: View {
         .onChange(of: personalizacion?.version) { _, _ in
             controller.aplicar(visibilidad: personalizacion?.visibilidad ?? [:])
         }
-        .onDisappear { controller.pausar() }
+        .overlay {
+            if let fueraDeZona {
+                ZStack {
+                    Rectangle().fill(.black.opacity(0.75)).ignoresSafeArea()
+                    VStack(spacing: 14) {
+                        Image(systemName: "location.slash.fill").font(.system(size: 44))
+                        Text("Saliste del restaurante").font(.title2.bold())
+                        Text(fueraDeZona).multilineTextAlignment(.center)
+                        Button("Cerrar") { dismiss() }
+                            .buttonStyle(.borderedProminent)
+                            .accessibilityIdentifier("cerrarFueraDeZona")
+                    }
+                    .foregroundStyle(.white)
+                    .padding(32)
+                }
+                .transition(.opacity)
+            }
+        }
+        .onAppear { if geocerca != nil { env.ubicacion.seguir(true) } }
+        .onChange(of: env.ubicacion.ultima) { _, nueva in
+            guard let geocerca, let nueva, fueraDeZona == nil else { return }
+            if case .fuera(let d) = geocerca.evaluar(nueva) {
+                // Dos lecturas seguidas fuera evitan cortar la sesión por un salto puntual del GPS.
+                lecturasFuera += 1
+                if lecturasFuera >= 2 {
+                    controller.retirar()
+                    controller.pausar()
+                    withAnimation { fueraDeZona = "Estás a \(GeocercaAR.formatear(metros: d)) del local. La realidad aumentada solo funciona dentro del restaurante." }
+                }
+            } else {
+                lecturasFuera = 0
+            }
+        }
+        .onDisappear {
+            controller.pausar()
+            env.ubicacion.seguir(false)
+        }
     }
 
     private var escalaTexto: String {

@@ -40,6 +40,45 @@ struct DishRecipe: Equatable, Hashable, Sendable, Identifiable {
 
     static let catalogo: [DishRecipe] = [pizza, hamburguesa, pollo]
 
+    // MARK: Platos escaneados con piezas separables
+    // Cada pieza es un escaneo independiente dentro del USDZ; su id coincide con el nombre del prim.
+
+    static func paraEscaneo(_ nombre: String) -> DishRecipe? { escaneos.first { $0.id == "escaneo-" + nombre } }
+
+    static let escaneos: [DishRecipe] = [
+        DishRecipe(id: "escaneo-combo_burger", nombre: "Hamburguesa con papas", diametroPlato: 0.45,
+                   ingredientes: [.init(id: "hamburguesa", nombre: "Hamburguesa", obligatorio: true),
+                                  .init(id: "papas", nombre: "Papas fritas", obligatorio: false)],
+                   variantes: []),
+        DishRecipe(id: "escaneo-combo_pollo", nombre: "Pollo a la brasa", diametroPlato: 0.45,
+                   ingredientes: [.init(id: "pollo", nombre: "Pollo", obligatorio: true),
+                                  .init(id: "papas", nombre: "Papas fritas", obligatorio: false),
+                                  .init(id: "limon", nombre: "Limón", obligatorio: false),
+                                  .init(id: "lima", nombre: "Lima", obligatorio: false)],
+                   variantes: []),
+        DishRecipe(id: "escaneo-combo_bife", nombre: "Bife con papas", diametroPlato: 0.50,
+                   ingredientes: [.init(id: "bife", nombre: "Bife", obligatorio: true),
+                                  .init(id: "papas", nombre: "Papas fritas", obligatorio: false)],
+                   variantes: []),
+        DishRecipe(id: "escaneo-bowl_frutas", nombre: "Bowl de frutas", diametroPlato: 0.31,
+                   ingredientes: [.init(id: "granada", nombre: "Granada", obligatorio: false),
+                                  .init(id: "manzana", nombre: "Manzana", obligatorio: false),
+                                  .init(id: "kiwi", nombre: "Kiwi", obligatorio: false),
+                                  .init(id: "limon", nombre: "Limón", obligatorio: false),
+                                  .init(id: "lima", nombre: "Lima", obligatorio: false),
+                                  .init(id: "lichis", nombre: "Lichis", obligatorio: false)],
+                   variantes: []),
+        DishRecipe(id: "escaneo-tabla_frutas", nombre: "Tabla de frutas", diametroPlato: 0.45,
+                   ingredientes: [.init(id: "palta", nombre: "Palta", obligatorio: false),
+                                  .init(id: "granada", nombre: "Granada", obligatorio: false),
+                                  .init(id: "manzana", nombre: "Manzana", obligatorio: false),
+                                  .init(id: "kiwi", nombre: "Kiwi", obligatorio: false),
+                                  .init(id: "limon", nombre: "Limón", obligatorio: false),
+                                  .init(id: "lima", nombre: "Lima", obligatorio: false),
+                                  .init(id: "lichis", nombre: "Lichis", obligatorio: false)],
+                   variantes: []),
+    ]
+
     static let pizza = DishRecipe(
         id: "pizza", nombre: "Pizza", diametroPlato: 0.30,
         ingredientes: [

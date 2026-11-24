@@ -18,13 +18,11 @@ struct CheckoutView: View {
     private func form(_ vm: CheckoutViewModel) -> some View {
         @Bindable var vm = vm
         if case .creado(let r) = vm.fase, let slug = env.carta?.restaurante.slug {
-            TrackingView(slug: slug, pedidoId: r.pedidoId, inicial: r)
+            TrackingView(slug: slug, pedidoId: r.pedidoId, inicial: r, tipo: vm.form.tipo.rawValue,
+                         restauranteNombre: env.carta?.restaurante.nombre)
                 .transition(.asymmetric(insertion: .move(edge: .trailing).combined(with: .opacity), removal: .opacity))
         } else {
             Form {
-                if vm.isDemo {
-                    Section { Label("Modo demostración: el envío está deshabilitado.", systemImage: "info.circle").foregroundStyle(.orange) }
-                }
                 Section("Tus datos") {
                     TextField("Nombre", text: $vm.form.clienteNombre)
                         .textContentType(.name)
@@ -59,7 +57,9 @@ struct CheckoutView: View {
                         TextField("Teléfono", text: $vm.form.telefono).keyboardType(.phonePad).textContentType(.telephoneNumber)
                         error(vm, .telefono)
                     case .recojo:
-                        Text("Recoge tu pedido en el mostrador.").font(.footnote).foregroundStyle(.secondary)
+                        Label("Recoge tu pedido en el mostrador de \(env.carta?.restaurante.nombre ?? "el restaurante") cuando esté listo.",
+                              systemImage: "bag")
+                            .font(.footnote).foregroundStyle(.secondary)
                     }
                 }
                 Section {
@@ -137,10 +137,11 @@ struct CheckoutView: View {
                 .buttonStyle(.borderedProminent).controlSize(.large)
             default:
                 Button { Task { await vm.enviar() } } label: {
-                    Label("Enviar pedido", systemImage: "paperplane.fill").frame(maxWidth: .infinity)
+                    Label("Hacer pedido · \(Money.format(cart.estimatedTotal))",
+                          systemImage: "paperplane.fill").frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent).controlSize(.large)
-                .disabled(cart.isEmpty || vm.isDemo)
+                .disabled(cart.isEmpty)
                 .accessibilityIdentifier("enviarPedido")
             }
         }

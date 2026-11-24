@@ -34,6 +34,16 @@ struct AccountView: View {
                     }
                 }
                 Section {
+                    NavigationLink {
+                        AdminAccesoView()
+                    } label: {
+                        Label(env.adminActivo ? "Modo administrador (activo)" : "Modo administrador", systemImage: "lock.shield")
+                    }
+                    .accessibilityIdentifier("abrirAdmin")
+                } header: { Text("Para restaurantes") } footer: {
+                    Text("Con PIN: restaurantes, platos, precios, disponibilidad, banners, ubicación y AR de los locales, y pedidos.")
+                }
+                Section {
                     TextField("URL del servidor", text: $urlServidor)
                         .textInputAutocapitalization(.never).autocorrectionDisabled().keyboardType(.URL)
                     Button("Guardar servidor") {
@@ -46,6 +56,9 @@ struct AccountView: View {
                 Section("Acerca de") {
                     LabeledContent("Versión", value: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "-")
                     LabeledContent("Entorno", value: AppConfig.environmentName)
+                    NavigationLink("Créditos de modelos 3D") { CreditosView() }
+                    Text("Los restaurantes del inicio son de muestra para la presentación: sus pedidos se procesan en este iPhone. Los restaurantes reales se abren con su QR o código.")
+                        .font(.footnote).foregroundStyle(.secondary)
                 }
             }
             .navigationTitle("Cuenta")

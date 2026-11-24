@@ -1,4 +1,5 @@
 import RealityKit
+import UIKit
 import XCTest
 @testable import AdbanaAR
 
@@ -85,7 +86,7 @@ final class DishCustomizationTests: XCTestCase {
     func testCarritoGuardaPersonalizacionComoNota() {
         let cart = CartStore()
         cart.bind(slug: DemoCatalog.slug, restauranteNombre: "Demo")
-        let pizza = DemoCatalog.carta.carta.flatMap(\.productos).first { $0.id == 9101 }!
+        let pizza = DemoCatalog.todosLosProductos.first { $0.id == 9101 }!
         XCTAssertEqual(cart.add(pizza, cantidad: 2, slug: DemoCatalog.slug, personalizacion: "sin aceitunas"), .added)
         XCTAssertEqual(cart.notasPersonalizacion, "2× Pizza personalizable: sin aceitunas")
         // El precio no cambia por la personalización: sigue siendo el del producto.
@@ -99,9 +100,62 @@ final class DishCustomizationTests: XCTestCase {
     func testDemoCatalogResuelveRecetas() async throws {
         let repo = ModelRepository()
         let api = APIClient(baseURL: URL(string: "http://localhost:8080")!)
-        let pizza = DemoCatalog.carta.carta.flatMap(\.productos).first { $0.id == 9101 }!
+        let pizza = DemoCatalog.todosLosProductos.first { $0.id == 9101 }!
         let fuente = try await repo.resolve(producto: pizza, slug: DemoCatalog.slug, api: api)
         XCTAssertEqual(fuente.receta?.id, "pizza")
         XCTAssertTrue(fuente.hasNativeModel)
+    }
+
+    /// Los platos fotorrealistas (CC0 Poly Haven) cargan desde el bundle a escala real, apoyados en la mesa.
+    func testEscaneosCarganAEscalaReal() async throws {
+        let repo = ModelRepository()
+        let api = APIClient(baseURL: URL(string: "http://localhost:8080")!)
+        let escaneos = DemoCatalog.todosLosProductos.filter { $0.modeloUSDZ?.hasPrefix("escaneo:") == true }
+        XCTAssertEqual(escaneos.count, 18)
+        for producto in escaneos {
+            let fuente = try await repo.resolve(producto: producto, slug: "demo-test", api: api)
+            guard case .escaneo = fuente else { return XCTFail("\(producto.nombre) no resolvió a escaneo") }
+            let entidad = try await DishEntityFactory.load(fuente)
+            let b = entidad.visualBounds(relativeTo: nil)
+            let ancho = max(b.extents.x, b.extents.z)
+            XCTAssertGreaterThan(ancho, 0.07, producto.nombre)
+            XCTAssertLessThan(ancho, 0.55, producto.nombre)
+            XCTAssertEqual(b.min.y, 0, accuracy: 0.002, producto.nombre)
+        }
+    }
+
+    func testRestaurantesDemoTienenIdsUnicosYFotos() {
+        let ids = DemoCatalog.todosLosProductos.map(\.id)
+        XCTAssertEqual(Set(ids).count, ids.count)
+        for r in DemoCatalog.restaurantes {
+            XCTAssertTrue(DemoCatalog.esDemo(r.slug))
+            XCTAssertNotNil(UIImage(named: r.portada), r.portada)
+        }
+    }
+
+    /// Los platos escaneados compuestos exponen cada pieza como entidad y se pueden ocultar sin tocar las demás.
+    func testEscaneosConPiezasSeparables() async throws {
+        let repo = ModelRepository()
+        let api = APIClient(baseURL: URL(string: "http://localhost:8080")!)
+        for receta in DishRecipe.escaneos {
+            let nombre = String(receta.id.dropFirst("escaneo-".count))
+            let producto = DemoCatalog.todosLosProductos.first { $0.modeloUSDZ == "escaneo:" + nombre }
+            XCTAssertNotNil(producto, "Ningún producto usa \(nombre)")
+            guard let producto else { continue }
+            let fuente = try await repo.resolve(producto: producto, slug: "demo-test", api: api)
+            XCTAssertEqual(fuente.receta?.id, receta.id)
+            let entidad = try await DishEntityFactory.load(fuente)
+            for ing in receta.ingredientes {
+                XCTAssertNotNil(entidad.findEntity(named: ing.id), "\(nombre): falta la pieza \(ing.id)")
+            }
+            let opcional = receta.opcionales.first!
+            let p = DishCustomization(receta: receta)
+            p.alternar(opcional.id)
+            ProceduralDishBuilder.aplicar(p.visibilidad, recetaId: receta.id, a: entidad)
+            XCTAssertEqual(entidad.findEntity(named: opcional.id)?.isEnabled, false)
+            for otro in receta.ingredientes where otro.id != opcional.id {
+                XCTAssertEqual(entidad.findEntity(named: otro.id)?.isEnabled, true, "\(nombre): \(otro.id) no debió ocultarse")
+            }
+        }
     }
 }

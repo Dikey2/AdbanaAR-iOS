@@ -14,6 +14,9 @@ enum DishEntityFactory {
         case .usdz(let url, _):
             let entity = try await Entity(contentsOf: url)
             return normalize(entity, diametro: diametroReferencia)
+        case .escaneo(let url, _):
+            // Ya está en metros: solo se centra y se apoya sobre la mesa, sin cambiar su tamaño.
+            return normalize(try await Entity(contentsOf: url), diametro: nil)
         case .receta(let receta):
             // Construido en metros: no se normaliza para conservar la escala física.
             return ProceduralDishBuilder.build(receta)
@@ -25,14 +28,15 @@ enum DishEntityFactory {
     /// Escala el modelo para que su mayor dimensión horizontal mida `diametro` metros
     /// y lo apoya sobre y = 0 (la superficie de la mesa).
     @MainActor
-    static func normalize(_ entity: Entity, diametro: Float) -> Entity {
+    static func normalize(_ entity: Entity, diametro: Float?) -> Entity {
         let root = Entity()
         root.name = "plato"
         root.addChild(entity)
-        let b = entity.visualBounds(relativeTo: root)
-        let extent = max(b.extents.x, b.extents.z, 0.0001)
-        let s = diametro / extent
-        entity.scale *= SIMD3<Float>(repeating: s)
+        if let diametro {
+            let b = entity.visualBounds(relativeTo: root)
+            let extent = max(b.extents.x, b.extents.z, 0.0001)
+            entity.scale *= SIMD3<Float>(repeating: diametro / extent)
+        }
         let b2 = entity.visualBounds(relativeTo: root)
         entity.position -= SIMD3<Float>(b2.center.x, b2.min.y, b2.center.z)
         return root

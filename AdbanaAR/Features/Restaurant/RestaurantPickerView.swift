@@ -7,12 +7,11 @@ struct RestaurantPickerView: View {
     @State private var mostrarQR = false
 
     var body: some View {
-        NavigationStack {
-            Group {
-                if let vm { content(vm) } else { ProgressView() }
-            }
-            .navigationTitle("Adbana AR")
+        Group {
+            if let vm { content(vm) } else { ProgressView() }
         }
+        .navigationTitle("Conectar restaurante")
+        .navigationBarTitleDisplayMode(.inline)
         .task { if vm == nil { vm = RestaurantPickerViewModel(env: env) } }
     }
 
@@ -89,12 +88,7 @@ struct RestaurantPickerView: View {
                 }
             }
 
-            Section {
-                Button { vm.abrirDemo() } label: {
-                    Label("Modo demostración sin servidor", systemImage: "cube.transparent")
-                }
-                .accessibilityIdentifier("modoDemo")
-            } footer: {
+            Section {} footer: {
                 Text("Servidor: \(env.api.baseURL.absoluteString) · entorno \(AppConfig.environmentName)")
             }
         }

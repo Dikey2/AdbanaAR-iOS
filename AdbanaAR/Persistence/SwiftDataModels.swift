@@ -64,8 +64,35 @@ final class CarritoGuardado {
     }
 }
 
+/// Ubicación AR de un restaurante afiliado, configurada en este dispositivo (SwiftData).
+/// Si el backend publica `configuracion.ubicacion_ar`, esa tiene prioridad sobre esta.
+@Model
+final class UbicacionRestaurante {
+    @Attribute(.unique) var slug: String
+    var restauranteNombre: String
+    var latitud: Double
+    var longitud: Double
+    var radioMetros: Double
+    /// El restaurante puede apagar la AR sin perder la ubicación configurada.
+    var arActiva: Bool = true
+    var actualizadoEn: Date
+
+    init(slug: String, restauranteNombre: String, geocerca: GeocercaAR) {
+        self.slug = slug
+        self.restauranteNombre = restauranteNombre
+        latitud = geocerca.latitud
+        longitud = geocerca.longitud
+        radioMetros = geocerca.radioMetros
+        actualizadoEn = .now
+    }
+
+    var geocerca: GeocercaAR { GeocercaAR(latitud: latitud, longitud: longitud, radioMetros: radioMetros) }
+}
+
 enum LocalStore {
-    static let schema: [any PersistentModel.Type] = [PreferenciasUsuario.self, BorradorPedido.self, CarritoGuardado.self]
+    static let schema: [any PersistentModel.Type] = [PreferenciasUsuario.self, BorradorPedido.self, CarritoGuardado.self,
+                                                     UbicacionRestaurante.self, AjusteRestaurante.self, AjusteProducto.self,
+                                                     AjusteBanner.self]
 
     static func makeContainer(inMemory: Bool) -> ModelContainer {
         // En el primer arranque Application Support no existe; crearlo evita errores de CoreData.
